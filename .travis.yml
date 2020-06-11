@@ -1,10 +1,131 @@
-language: python
-install: "pip install -r requirements.txt"
+language: java
 
-script:
-  # Run ANSIBLE checks
-  # - ANSIBLE0008: Disabled for use of sudo warnings - to address
-  # - ANSIBLE0011: Disabled for all tasks which should be named
-  # - ANSIBLE0012: Disabled (should not change if nothings needs doing) - to address
-  # - ANSIBLE0013: Disabled - few uses of shell commands - to address
-  - find vagrant/provision -name "*.yml" -exec ansible-lint -x ANSIBLE008,ANSIBLE0011,ANSIBLE0012,ANSIBLE0013  {} +
+env:
+  global:
+    - secure: jexlC3nb6lgXBzeNTc93TbkMUlPPV4uTJ0LHFn3IMVJ6qs4HAbxz/mG2282H2sIlzYMoqiIIV9vF2jeiJ58hOL0TO66ws4pt/KLJygInvCRDWYUOykkbbTh+yFLTX65xoNQs1Cl31QccjCDfROVWFwPms2M94nOiIHxH40TedUIgQjf3W0ljrMIMtv/t2npe22WBkbACg1DhFXF6+bwwtT12cXpvZv8Q2FuAn7PyEc5JqXWGMzlN8850ohAMffFEritw3O1nJVF1r0HwwLAJ65Rj1WMiyT2ntLP2cK6ciUjkAmNDphuE8iPML0Qa9Nyqnm1vkPNnVGwXeuVG4G/dz6kOmTLfpSJ1ztNotqRLW9bqKIVlxMF4wJXeuE3pEmIP++qX7jnPRarztN6SPVmMk40aHUFqFuPPN4O9SI4a/72wbmUmasx3ZcIh/lwinT+zLr+kVFG2LExb7rpj5bxG+GxUdE9FISbbKZCeehOzBaeORL6oAVMJb22tPHq2sKlATbLVjy0jfvyXLXicdhJGLJ1bQj+jvGmN0hOqzmb+uz+W5tul20vdW/c1WdMqI2hta5rGjL9PXqsWpvGkbf0bXgF2bZrabO4VCYJnvHdLj4Q/unXGLF11z2ecL5Aw6ySJR8EqOHM8xTp7X/M0YCnQapUt6lSc4nRjK5Fzo0f5BsU=
+
+services:
+  - docker
+
+
+jobs:
+  include:
+    - stage: test
+      jdk: oraclejdk9
+      before_install: ./gradlew clean jar
+      install: ./gradlew -p ./monolithic/$TARGET packageToContainer
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.050
+        TARGET="ui"
+    - stage: test
+      jdk: oraclejdk9
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.140
+        TARGET="service/cart"
+    - stage: test
+      jdk: oraclejdk9
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.00
+        TARGET="service/user"
+    - stage: test
+      jdk: oraclejdk9
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.24
+        TARGET="repository/order"
+    - stage: test
+      jdk: oraclejdk9
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.00
+        TARGET="repository/cart"
+    - stage: test
+      jdk: oraclejdk9
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.120
+        TARGET="repository/product"
+    - stage: test
+      jdk: oraclejdk9
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.24
+        TARGET="repository/user"
+    - stage: test
+      jdk: openjdk10
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.050
+        TARGET="ui"
+    - stage: test
+      jdk: openjdk10
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.140
+        TARGET="service/cart"
+    - stage: test
+      jdk: openjdk10
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.00
+        TARGET="service/user"
+    - stage: test
+      jdk: openjdk10
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.24
+        TARGET="repository/order"
+    - stage: test
+      jdk: openjdk10
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.00
+        TARGET="repository/cart"
+    - stage: test
+      jdk: openjdk10
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.120
+        TARGET="repository/product"
+    - stage: test
+      jdk: openjdk10
+      before_script: ./gradlew clean jar
+      script:
+        - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+      env:
+        COVERAGE=0.24
+        TARGET="repository/user"
+
+deploy:
+  provider: script
+  script: bash -c "echo \"${DOCKER_PASSWORD}\"|docker login --username \"${DOCKER_LOGIN}\" --password-stdin"
+  on:
+    all_branches: true
