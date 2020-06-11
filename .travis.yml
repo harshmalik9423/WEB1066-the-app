@@ -69,7 +69,8 @@ jobs:
         TARGET="repository/user"
     - stage: test
       jdk: openjdk10
-      before_script: ./gradlew clean jar
+      before_install: ./gradlew clean jar
+      install: ./gradlew -p ./monolithic/$TARGET packageToContainer
       script:
         - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
         - chmod +x ./script/deploy.sh
