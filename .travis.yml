@@ -7,13 +7,11 @@ env:
 services:
   - docker
 
-
 jobs:
   include:
     - stage: test
       jdk: oraclejdk9
-      before_install: ./gradlew clean jar
-      install: ./gradlew -p ./monolithic/$TARGET packageToContainer
+      before_script: ./gradlew clean jar
       script:
         - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
       env:
