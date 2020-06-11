@@ -11,9 +11,11 @@ jobs:
   include:
     - stage: test
       jdk: oraclejdk9
-      before_script: ./gradlew clean jar
+      before_install: ./gradlew clean jar
+      install: ./gradlew -p ./monolithic/$TARGET packageToContainer
       script:
         - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+        - chmod +x ./script/deploy.sh
       env:
         COVERAGE=0.050
         TARGET="ui"
@@ -70,6 +72,7 @@ jobs:
       before_script: ./gradlew clean jar
       script:
         - COVERAGE=$COVERAGE ./gradlew -p ./monolithic/$TARGET check
+        - chmod +x ./script/deploy.sh
       env:
         COVERAGE=0.050
         TARGET="ui"
@@ -124,6 +127,7 @@ jobs:
 
 deploy:
   provider: script
-  script: bash -c "echo \"${DOCKER_PASSWORD}\"|docker login --username \"${DOCKER_LOGIN}\" --password-stdin"
+  script: bash scripts/deploy.sh
   on:
-    all_branches: true
+    branch: master
+    condition: "$TARGET = ui"
